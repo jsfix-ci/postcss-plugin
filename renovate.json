@@ -1,0 +1,20 @@
+{
+  "extends": ["config:base", "group:linters"],
+  "packageRules": [
+    {
+      "depTypeList": ["dependencies"],
+      "automerge": true,
+      "major": {
+        "automerge": false
+      }
+    },
+    {
+      "depTypeList": ["devDependencies"],
+      "schedule": ["before 4am on monday"],
+      "automerge": true,
+      "major": {
+        "automerge": false
+      }
+    }
+  ]
+}
