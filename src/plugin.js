@@ -46,7 +46,7 @@ async function fetchImportMaps(urls = []) {
 // @TODO this could be a @eik/import-map-utils package
 async function getImportMap({
     path: eikPath = path.join(process.cwd(), 'eik.json'),
-    urls,
+    urls = [],
     imports = {},
 } = {}) {
     const mapping = new Map();
