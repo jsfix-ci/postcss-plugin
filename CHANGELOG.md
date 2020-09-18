@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/eik-lib/postcss-import-map/compare/v1.1.0...v1.2.0) (2020-09-18)
+
+
+### Features
+
+* add utility for integrating with postcss-import ([6fcbf06](https://github.com/eik-lib/postcss-import-map/commit/6fcbf06190516ceb1340206b581a0a80b401fa2e))
+
 # [1.1.0](https://github.com/eik-lib/postcss-import-map/compare/v1.0.0...v1.1.0) (2020-08-26)
 
 
