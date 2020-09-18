@@ -74,12 +74,15 @@ async function getImportMap({
     return mapping;
 }
 
+// The resolve option in postcss-import doesn't support async functions or promises, thus we have to workaround it
+let mapping = new Map();
+
 export default postcss.plugin(
     '@eik/postcss-import-map',
     ({ path, urls, imports } = {}) => {
     // Work with options here
         return async (root) => {
-            const mapping = await getImportMap({ path, urls, imports });
+            mapping = await getImportMap({ path, urls, imports });
             root.walkAtRules('import', (decl) => {
                 let key;
                 // First check if it's possibly using syntax like url()
@@ -105,20 +108,6 @@ export default postcss.plugin(
 );
 
 // Useful for integrating with other plugins such as postcss-import
-export function createPostcssImportResolver({ path, urls, imports } = {}) {
-    let mapping;
-    return async function resolve(id) {
-        if (!mapping) {
-            mapping = await getImportMap({ path, urls, imports });
-        }
-
-        // Webpcak interop
-        const url = id.replace(/^~/, '');
-
-        if (mapping.has(url)) {
-            return mapping.get(url);
-        }
-
-        return url;
-    };
+export function filter(url) {
+    return !mapping.has(url);
 }
