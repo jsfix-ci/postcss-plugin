@@ -111,8 +111,10 @@ export function createPostcssImportResolver({ path, urls, imports } = {}) {
         if (!mapping) {
             mapping = await getImportMap({ path, urls, imports });
         }
-        
+
+        // Webpcak interop
         const url = id.replace(/^~/, '');
+
         if (mapping.has(url)) {
             return mapping.get(url);
         }
