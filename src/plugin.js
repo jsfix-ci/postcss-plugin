@@ -1,4 +1,4 @@
-/* eslint-disable no-restricted-syntax */
+/* eslint-disable no-restricted-syntax, no-shadow */
 
 import fs from 'fs';
 import path from 'path';
@@ -43,38 +43,43 @@ async function fetchImportMaps(urls = []) {
     }
 }
 
+// @TODO this could be a @eik/import-map-utils package
+async function getImportMap({
+    path: eikPath = path.join(process.cwd(), 'eik.json'),
+    urls,
+    imports = {},
+} = {}) {
+    const mapping = new Map();
+    const importmapUrls = await readEikJSONMaps(eikPath);
+    for (const map of importmapUrls) {
+        urls.push(map);
+    }
+
+    let imprts = {};
+    if (urls.length > 0) {
+        imprts = { ...(await fetchImportMaps(urls)) };
+    }
+    Object.assign(imprts, imports);
+
+    Object.keys(imprts).forEach((key) => {
+        const value = Array.isArray(imprts[key]) ? imprts[key][0] : imprts[key];
+
+        if (notBare(key)) return;
+
+        if (notUrl(value)) throw Error('Target for import specifier must be an absolute URL.');
+
+        mapping.set(key, value);
+    });
+
+    return mapping;
+}
+
 export default postcss.plugin(
     '@eik/postcss-import-map',
-    ({
-        path: eikPath = path.join(process.cwd(), 'eik.json'),
-        urls = [],
-        imports = {},
-    } = {}) => {
-        const mapping = new Map();
-
-        // Work with options here
+    ({ path, urls, imports } = {}) => {
+    // Work with options here
         return async (root) => {
-            const importmapUrls = await readEikJSONMaps(eikPath);
-            for (const map of importmapUrls) {
-                urls.push(map);
-            }
-
-            let imprts = {};
-            if (urls.length > 0) {
-                imprts = { ...(await fetchImportMaps(urls)) };
-            }
-            Object.assign(imprts, imports);
-
-            Object.keys(imprts).forEach((key) => {
-                const value = Array.isArray(imprts[key]) ? imprts[key][0] : imprts[key];
-
-                if (notBare(key)) return;
-
-                if (notUrl(value)) throw Error('Target for import specifier must be an absolute URL.');
-
-                mapping.set(key, value);
-            });
-
+            const mapping = await getImportMap({ path, urls, imports });
             root.walkAtRules('import', (decl) => {
                 let key;
                 // First check if it's possibly using syntax like url()
@@ -98,3 +103,20 @@ export default postcss.plugin(
         };
     }
 );
+
+// Useful for integrating with other plugins such as postcss-import
+export function createPostcssImportResolver({ path, urls, imports } = {}) {
+    let mapping;
+    return async function resolve(id) {
+        if (!mapping) {
+            mapping = await getImportMap({ path, urls, imports });
+        }
+        
+        const url = id.replace(/^~/, '');
+        if (mapping.has(url)) {
+            return mapping.get(url);
+        }
+
+        return url;
+    };
+}
