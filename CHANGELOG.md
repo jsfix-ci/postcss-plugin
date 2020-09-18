@@ -1,3 +1,10 @@
+## [1.2.2](https://github.com/eik-lib/postcss-import-map/compare/v1.2.1...v1.2.2) (2020-09-18)
+
+
+### Bug Fixes
+
+* try again to make the filter work ([9e89a10](https://github.com/eik-lib/postcss-import-map/commit/9e89a1002a2261615238b2f0433cbee8a1b9a2b7))
+
 ## [1.2.1](https://github.com/eik-lib/postcss-import-map/compare/v1.2.0...v1.2.1) (2020-09-18)
 
 
