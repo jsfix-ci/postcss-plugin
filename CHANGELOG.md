@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/eik-lib/postcss-import-map/compare/v1.2.0...v1.2.1) (2020-09-18)
+
+
+### Bug Fixes
+
+* replace resolve workaround with filter ([7b0dd77](https://github.com/eik-lib/postcss-import-map/commit/7b0dd7715ef537baeae4dd713beb6882c49a84cd))
+
 # [1.2.0](https://github.com/eik-lib/postcss-import-map/compare/v1.1.0...v1.2.0) (2020-09-18)
 
 
