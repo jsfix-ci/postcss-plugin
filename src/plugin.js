@@ -74,7 +74,8 @@ async function getImportMap({
     return mapping;
 }
 
-// The resolve option in postcss-import doesn't support async functions or promises, thus we have to workaround it
+// The resolve option in postcss-import doesn't support async functions or promises,
+// thus we have to workaround it
 let mapping = new Map();
 
 export default postcss.plugin(
