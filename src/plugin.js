@@ -43,13 +43,19 @@ async function fetchImportMaps(urls = []) {
     }
 }
 
+// The resolve option in postcss-import doesn't support async functions or promises,
+// thus we have to workaround it
+const mapping = new Map();
+
 // @TODO this could be a @eik/import-map-utils package
-async function getImportMap({
+async function populateImportMap({
     path: eikPath = path.join(process.cwd(), 'eik.json'),
     urls = [],
     imports = {},
 } = {}) {
-    const mapping = new Map();
+    // Reset the map to avoid pollution
+    mapping.clear();
+
     const importmapUrls = await readEikJSONMaps(eikPath);
     for (const map of importmapUrls) {
         urls.push(map);
@@ -70,20 +76,14 @@ async function getImportMap({
 
         mapping.set(key, value);
     });
-
-    return mapping;
 }
-
-// The resolve option in postcss-import doesn't support async functions or promises,
-// thus we have to workaround it
-let mapping = new Map();
 
 export default postcss.plugin(
     '@eik/postcss-import-map',
     ({ path, urls, imports } = {}) => {
     // Work with options here
         return async (root) => {
-            mapping = await getImportMap({ path, urls, imports });
+            await populateImportMap({ path, urls, imports });
             root.walkAtRules('import', (decl) => {
                 let key;
                 // First check if it's possibly using syntax like url()
