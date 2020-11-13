@@ -1,3 +1,20 @@
+# [2.0.0](https://github.com/eik-lib/postcss-import-map/compare/v1.2.3...v2.0.0) (2020-11-13)
+
+
+### Bug Fixes
+
+* **deps:** update dependency node-fetch to ^2.6.1 ([#33](https://github.com/eik-lib/postcss-import-map/issues/33)) ([8b0455c](https://github.com/eik-lib/postcss-import-map/commit/8b0455c5c812d7db15d5f39d8d067fcd42f966a8))
+
+
+### Features
+
+* support PostCSS v8 ([#36](https://github.com/eik-lib/postcss-import-map/issues/36)) ([5156ba5](https://github.com/eik-lib/postcss-import-map/commit/5156ba5a01aab1781b01a0756772cb0804ea0740))
+
+
+### BREAKING CHANGES
+
+* PostCSS v7 and longer isn't supported
+
 ## [1.2.3](https://github.com/eik-lib/postcss-import-map/compare/v1.2.2...v1.2.3) (2020-11-13)
 
 
