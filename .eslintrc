@@ -4,7 +4,7 @@
     "node": true,
     "browser": true
   },
-  "extends": "airbnb-base",
+  "extends": ["airbnb-base", "prettier"],
   "rules": {
     "import/extensions": [0, "always"],
     "strict": [0, "global"],
