@@ -1,3 +1,10 @@
+## [1.2.3](https://github.com/eik-lib/postcss-import-map/compare/v1.2.2...v1.2.3) (2020-11-13)
+
+
+### Bug Fixes
+
+* prettier ([2960cc7](https://github.com/eik-lib/postcss-import-map/commit/2960cc771b0c63606a1ea9b95d134eeef978ae02))
+
 ## [1.2.2](https://github.com/eik-lib/postcss-import-map/compare/v1.2.1...v1.2.2) (2020-09-18)
 
 
