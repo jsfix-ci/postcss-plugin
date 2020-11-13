@@ -1,10 +1,9 @@
 /* eslint-disable no-restricted-syntax, no-shadow */
 
-import fs from 'fs';
-import path from 'path';
-import fetch from 'node-fetch';
-import postcss from 'postcss';
-import parseCssUrls from 'css-url-parser';
+const fs = require('fs');
+const path = require('path');
+const fetch = require('node-fetch');
+const parseCssUrls = require('css-url-parser');
 
 const notUrl = (url) => url.substr(0, 4) !== 'http';
 
@@ -83,13 +82,14 @@ async function populateImportMap({
     });
 }
 
-export default postcss.plugin(
-    '@eik/postcss-import-map',
-    ({ path, urls, imports } = {}) => {
-        // Work with options here
-        return async (root) => {
-            await populateImportMap({ path, urls, imports });
-            root.walkAtRules('import', (decl) => {
+module.exports = ({ path, urls, imports } = {}) => {
+    // Eagerly start resolving
+    const mapFetch = populateImportMap({ path, urls, imports });
+    return {
+        postcssPlugin: '@eik/postcss-import-map',
+        AtRule: {
+            import: async (decl) => {
+                await mapFetch;
                 let key;
                 // First check if it's possibly using syntax like url()
                 const parsedUrls = parseCssUrls(decl.params);
@@ -108,12 +108,14 @@ export default postcss.plugin(
                     // eslint-disable-next-line no-param-reassign
                     decl.params = `'${mapping.get(key)}'`;
                 }
-            });
-        };
-    }
-);
+            },
+        },
+    };
+};
 
 // Useful for integrating with other plugins such as postcss-import
-export function filter(url) {
+module.exports.filter = function filter(url) {
     return !mapping.has(url);
-}
+};
+
+module.exports.postcss = true;
