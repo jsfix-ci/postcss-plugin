@@ -1,3 +1,10 @@
+## [2.0.3](https://github.com/eik-lib/postcss-import-map/compare/v2.0.2...v2.0.3) (2020-11-19)
+
+
+### Bug Fixes
+
+* better interop with postcss-import ([965d5f5](https://github.com/eik-lib/postcss-import-map/commit/965d5f52bc9585817c5c0b9fda0d1868df009a4a))
+
 ## [2.0.2](https://github.com/eik-lib/postcss-import-map/compare/v2.0.1...v2.0.2) (2020-11-19)
 
 
