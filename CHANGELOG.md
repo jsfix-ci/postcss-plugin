@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/eik-lib/postcss-import-map/compare/v2.0.0...v2.0.1) (2020-11-19)
+
+
+### Bug Fixes
+
+* correct peer dep for PostCSS ([9a25475](https://github.com/eik-lib/postcss-import-map/commit/9a25475d5b0793bb8397fe6b5e393e0e3a8440c2))
+
 # [2.0.0](https://github.com/eik-lib/postcss-import-map/compare/v1.2.3...v2.0.0) (2020-11-13)
 
 
