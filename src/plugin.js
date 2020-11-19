@@ -46,18 +46,13 @@ async function fetchImportMaps(urls = []) {
     }
 }
 
-// The resolve option in postcss-import doesn't support async functions or promises,
-// thus we have to workaround it
-const mapping = new Map();
-
 // @TODO this could be a @eik/import-map-utils package
 async function populateImportMap({
     path: eikPath = path.join(process.cwd(), 'eik.json'),
     urls = [],
     imports = {},
 } = {}) {
-    // Reset the map to avoid pollution
-    mapping.clear();
+    const mapping = new Map();
 
     const importmapUrls = await readEikJSONMaps(eikPath);
     for (const map of importmapUrls) {
@@ -80,16 +75,24 @@ async function populateImportMap({
 
         mapping.set(key, value);
     });
+
+    return mapping;
 }
 
 module.exports = ({ path, urls, imports } = {}) => {
-    // Eagerly start resolving
-    const mapFetch = populateImportMap({ path, urls, imports });
     return {
         postcssPlugin: '@eik/postcss-import-map',
-        AtRule: {
-            import: async (decl) => {
-                await mapFetch;
+        prepare() {
+            // Avoid parsing things more than necessary
+            const processed = new WeakMap();
+            // Eagerly start resolving
+            const mapFetch = populateImportMap({ path, urls, imports });
+            // Reused replace logic
+            const applyImportMap = (mapping, decl) => {
+                if (processed.has(decl)) {
+                    return;
+                }
+
                 let key;
                 // First check if it's possibly using syntax like url()
                 const parsedUrls = parseCssUrls(decl.params);
@@ -108,14 +111,28 @@ module.exports = ({ path, urls, imports } = {}) => {
                     // eslint-disable-next-line no-param-reassign
                     decl.params = `'${mapping.get(key)}'`;
                 }
-            },
+
+                // Cache we've processed this
+                processed.set(decl, true);
+            };
+            return {
+                // Run initially once, this is to ensure it runs before postcss-import
+                async Once(root) {
+                    const mapping = await mapFetch;
+
+                    root.walkAtRules('import', (decl) => {
+                        applyImportMap(mapping, decl);
+                    });
+                },
+                AtRule: {
+                    import: async (decl) => {
+                        const mapping = await mapFetch;
+                        applyImportMap(mapping, decl);
+                    },
+                },
+            };
         },
     };
-};
-
-// Useful for integrating with other plugins such as postcss-import
-module.exports.filter = function filter(url) {
-    return !mapping.has(url);
 };
 
 module.exports.postcss = true;
