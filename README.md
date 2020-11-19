@@ -4,8 +4,8 @@ PostCSS [Eik](https://eik.dev/) plugin to support the use of import maps to map 
 
 **Notes:**
 
-- **This plugin should probably be used as the first plugin of your list.
-  Especially before the [postcss-import](https://github.com/postcss/postcss-import) plugin**.
+-   **This plugin should probably be used as the first plugin of your list.**
+-   **If you use `postcss-import` please [read this.](#postcss-import-usage)**
 
 ## Installation
 
@@ -26,22 +26,23 @@ var css = fs.readFileSync('css/input.css', 'utf8');
 
 // process css
 postcss()
-  .use(
-    eikImportMapPlugin({
-      imports: {
-        'normalize.css': 'https://unpkg.com/normalize.css@8/normalize.css',
-      },
+    .use(
+        eikImportMapPlugin({
+            imports: {
+                'normalize.css':
+                    'https://unpkg.com/normalize.css@8/normalize.css',
+            },
+        })
+    )
+    .process(css, {
+        // `from` option is needed here
+        from: 'css/input.css',
     })
-  )
-  .process(css, {
-    // `from` option is needed here
-    from: 'css/input.css',
-  })
-  .then(function (result) {
-    var output = result.css;
+    .then(function (result) {
+        var output = result.css;
 
-    console.log(output);
-  });
+        console.log(output);
+    });
 ```
 
 `css/input.css`:
@@ -50,7 +51,7 @@ postcss()
 @import 'normalize.css';
 
 body {
-  background: black;
+    background: black;
 }
 ```
 
@@ -60,8 +61,25 @@ will give you:
 @import 'https://unpkg.com/normalize.css@8/normalize.css';
 
 body {
-  background: black;
+    background: black;
 }
+```
+
+## PostCSS Import Usage
+
+If you're using [postcss-import](https://github.com/postcss/postcss-import) make sure you update the `plugins` option.
+`postcss.config.js`
+
+```js
+module.exports = (ctx) => ({
+    plugins: [
+        require('@eik/postcss-import-map')(),
+        require('postcss-import')({
+            // It needs to be added here as well to ensure everything is mapped
+            plugins: [require('@eik/postcss-import-map')],
+        }),
+    ],
+});
 ```
 
 ## Options
