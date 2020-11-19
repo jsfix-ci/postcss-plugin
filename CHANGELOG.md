@@ -1,3 +1,10 @@
+## [2.0.2](https://github.com/eik-lib/postcss-import-map/compare/v2.0.1...v2.0.2) (2020-11-19)
+
+
+### Bug Fixes
+
+* document postcss-import usage ([8fe2451](https://github.com/eik-lib/postcss-import-map/commit/8fe24514aa7a32585d73e8b7aa6b2080d4ee35b8))
+
 ## [2.0.1](https://github.com/eik-lib/postcss-import-map/compare/v2.0.0...v2.0.1) (2020-11-19)
 
 
