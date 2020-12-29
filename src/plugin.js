@@ -85,6 +85,8 @@ module.exports = ({ path, urls, imports } = {}) => {
         prepare() {
             // Avoid parsing things more than necessary
             const processed = new WeakMap();
+            // Only replace once per url
+            const replaced = new Set();
             // Eagerly start resolving
             const mapFetch = populateImportMap({ path, urls, imports });
             // Reused replace logic
@@ -107,9 +109,12 @@ module.exports = ({ path, urls, imports } = {}) => {
                 // Webpack interop
                 key = key.replace(/^~/, '');
 
-                if (mapping.has(key)) {
+                if (replaced.has(key)) {
+                    decl.remove();
+                } else if (mapping.has(key)) {
                     // eslint-disable-next-line no-param-reassign
                     decl.params = `'${mapping.get(key)}'`;
+                    replaced.add(key);
                 }
 
                 // Cache we've processed this
