@@ -1,6 +1,11 @@
-import tap from 'tap';
-import postcss from 'postcss';
-import plugin from '../src/plugin';
+'use strict';
+
+const postcss = require('postcss');
+const fastify = require('fastify');
+const path = require('path');
+const tap = require('tap');
+const fs = require('fs');
+const plugin = require("..");
 
 const simple = `
   @import 'normalize.css';
@@ -29,12 +34,14 @@ tap.test(
         t.rejects(
             postcss(
                 plugin({
-                    imports: {
-                        foo: './foo',
-                    },
+                    maps: [{
+                        imports: {
+                            foo: './foo',
+                        },
+                    }],
                 })
             ).process(simple, { from: undefined }),
-            new Error('Target for import specifier must be an absolute URL.')
+            new Error('Import specifier can NOT be mapped to a bare import statement. Import specifier "foo" is being wrongly mapped to "./foo"')
         );
         t.end();
     }
@@ -45,9 +52,11 @@ tap.test(
     async (t) => {
         const { css } = await postcss(
             plugin({
-                imports: {
-                    'normalize.css': 'https://unpkg.com/normalize.css@8/normalize.css',
-                },
+                maps: [{
+                    imports: {
+                        "normalize.css": 'https://cdn.eik.dev/normalize.css@8/normalize.css',
+                    },
+                }],
             })
         ).process(simple, { from: undefined });
 
@@ -61,9 +70,11 @@ tap.test(
     async (t) => {
         const { css } = await postcss(
             plugin({
-                imports: {
-                    'normalize.css': 'https://unpkg.com/normalize.css@8/normalize.css',
-                },
+                maps: [{
+                    imports: {
+                        'normalize.css': 'https://cdn.eik.dev/normalize.css@8/normalize.css',
+                    },
+                }],
             })
         ).process(advanced, { from: undefined });
 
@@ -77,9 +88,11 @@ tap.test(
     async (t) => {
         const { css } = await postcss(
             plugin({
-                imports: {
-                    'normalize.css': 'https://unpkg.com/normalize.css@8/normalize.css',
-                },
+                maps: [{
+                    imports: {
+                        'normalize.css': 'https://cdn.eik.dev/normalize.css@8/normalize.css',
+                    },
+                }],
             })
         ).process(webpack, { from: undefined });
 
@@ -88,21 +101,164 @@ tap.test(
     }
 );
 
-tap.test(
-    'plugin() - import values is an Array - should use the first entry in the Array',
-    async (t) => {
-        const { css } = await postcss(
-            plugin({
-                imports: {
-                    'normalize.css': [
-                        'https://unpkg.com/normalize.css@8/normalize.css',
-                        'https://unpkg.com/normalize.css@7/normalize.css',
-                    ],
-                },
-            })
-        ).process(simple, { from: undefined });
+tap.test('plugin() - eik.json defined import maps', async (t) => {
+    const server = fastify();
+    server.get('/one', (request, reply) => {
+        reply.send({
+            imports: {
+                'normalize.css': 'https://cdn.eik.dev/normalize.css@8/normalize.css',
+            },
+        });
+    });
+    const address = await server.listen();
 
-        t.matchSnapshot(clean(css), 'first array entry');
-        t.end();
-    }
-);
+    await fs.promises.writeFile(path.join(process.cwd(), 'eik.json'), JSON.stringify({
+        name: 'test',
+        server: address,
+        version: '1.0.0',
+        files: {
+            '/css': '/src/css/',
+            '/js': '/src/js/',
+        },
+        'import-map': `${address}/one`,
+    }));
+
+    const { css } = await postcss(
+        plugin()
+    ).process(simple, { from: undefined });
+
+    t.matchSnapshot(clean(css), 'import maps specified in eik.json');
+    await server.close();
+    await fs.promises.unlink(path.join(process.cwd(), 'eik.json'));
+    t.end();
+});
+
+tap.test('plugin() - Import map defined through constructor "maps" argument take precedence over import map defined in eik.json', async (t) => {
+    const server = fastify();
+    server.get('/one', (request, reply) => {
+        reply.send({
+            imports: {
+                'normalize.css': 'https://cdn.eik.dev/normalize.css@7/normalize.css',
+            },
+        });
+    });
+    const address = await server.listen();
+
+    await fs.promises.writeFile(path.join(process.cwd(), 'eik.json'), JSON.stringify({
+        name: 'test',
+        server: address,
+        version: '1.0.0',
+        files: {
+            '/css': '/src/css/',
+            '/js': '/src/js/',
+        },
+        'import-map': `${address}/one`,
+    }));
+
+    const { css } = await postcss(
+        plugin({
+            maps: [{
+                imports: {
+                    'normalize.css': 'https://cdn.eik.dev/normalize.css@8/normalize.css',
+                },
+            }],
+        })
+    ).process(simple, { from: undefined });
+
+    t.matchSnapshot(clean(css), 'Should rewrite import statement to https://cdn.eik.dev/normalize.css@8/normalize.css');
+    await server.close();
+    await fs.promises.unlink(path.join(process.cwd(), 'eik.json'));
+    t.end();
+});
+
+
+tap.test('plugin() - Import map defined through constructor "urls" argument take precedence over import map defined in eik.json', async (t) => {
+    const server = fastify();
+    server.get('/one', (request, reply) => {
+        reply.send({
+            imports: {
+                'normalize.css': 'https://cdn.eik.dev/normalize.css@7/normalize.css',
+            },
+        });
+    });
+    server.get('/two', (request, reply) => {
+        reply.send({
+            imports: {
+                'normalize.css': 'https://cdn.eik.dev/normalize.css@8/normalize.css',
+            },
+        });
+    });
+    const address = await server.listen();
+
+    await fs.promises.writeFile(path.join(process.cwd(), 'eik.json'), JSON.stringify({
+        name: 'test',
+        server: address,
+        version: '1.0.0',
+        files: {
+            '/css': '/src/css/',
+            '/js': '/src/js/',
+        },
+        'import-map': `${address}/one`,
+    }));
+
+    const { css } = await postcss(
+        plugin({
+            urls: [
+                `${address}/two`
+            ],
+        })
+    ).process(simple, { from: undefined });
+
+    t.matchSnapshot(clean(css), 'Should rewrite import statement to https://cdn.eik.dev/normalize.css@8/normalize.css');
+    await server.close();
+    await fs.promises.unlink(path.join(process.cwd(), 'eik.json'));
+    t.end();
+});
+
+tap.test('plugin() - Import map defined through constructor "maps" argument take precedence over import map defined through constructor "urls" argument', async (t) => {
+    const server = fastify();
+    server.get('/one', (request, reply) => {
+        reply.send({
+            imports: {
+                'normalize.css': 'https://cdn.eik.dev/normalize.css@6/normalize.css',
+            },
+        });
+    });
+    server.get('/two', (request, reply) => {
+        reply.send({
+            imports: {
+                'normalize.css': 'https://cdn.eik.dev/normalize.css@7/normalize.css',
+            },
+        });
+    });
+    const address = await server.listen();
+
+    await fs.promises.writeFile(path.join(process.cwd(), 'eik.json'), JSON.stringify({
+        name: 'test',
+        server: address,
+        version: '1.0.0',
+        files: {
+            '/css': '/src/css/',
+            '/js': '/src/js/',
+        },
+        'import-map': `${address}/one`,
+    }));
+
+    const { css } = await postcss(
+        plugin({
+            urls: [
+                `${address}/two`
+            ],
+            maps: [{
+                imports: {
+                    'normalize.css': 'https://cdn.eik.dev/normalize.css@8/normalize.css',
+                },
+            }],
+        })
+    ).process(simple, { from: undefined });
+
+    t.matchSnapshot(clean(css), 'Should rewrite import statement to https://cdn.eik.dev/normalize.css@8/normalize.css');
+    await server.close();
+    await fs.promises.unlink(path.join(process.cwd(), 'eik.json'));
+    t.end();
+});
