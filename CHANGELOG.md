@@ -1,3 +1,25 @@
+# [3.0.0](https://github.com/eik-lib/postcss-import-map/compare/v2.0.4...v3.0.0) (2021-08-13)
+
+
+### Features
+
+* Rename module to @eik/postcss-plugin ([#83](https://github.com/eik-lib/postcss-import-map/issues/83)) ([7efa758](https://github.com/eik-lib/postcss-import-map/commit/7efa758f4dc8162e4ca500a7628d7c80f4151b61))
+* Use @eik/common to load config in a project ([#84](https://github.com/eik-lib/postcss-import-map/issues/84)) ([371dcda](https://github.com/eik-lib/postcss-import-map/commit/371dcda2c5245c3759ee4c45e27fc64f926f88fc))
+
+
+### BREAKING CHANGES
+
+* Use logic in @eik/common to load config from eik.json or package.json
+
+* chore: Adjust for PR comments
+
+* chore: Remove extra whitespace
+
+Co-authored-by: Trygve Lie <trygve.lie@finn.no>
+* Rename module to @eik/postcss-plugin
+
+Co-authored-by: Trygve Lie <trygve.lie@finn.no>
+
 # [3.0.0-next.2](https://github.com/eik-lib/postcss-import-map/compare/v3.0.0-next.1...v3.0.0-next.2) (2021-03-02)
 
 
